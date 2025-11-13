@@ -148,11 +148,8 @@ public class CucumberPosSteps {
 
     @Then("the POS named {string} should have description {string}")
     public void thePosNamedShouldHaveDescription(String name, String expectedDescription) {
-        List<PosDto> retrievedPosList = retrievePos();
-        PosDto retrievedPos = retrievedPosList.stream()
-                .filter(pos -> pos.name().equals(name))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("POS with name '" + name + "' not found"));
+        // Use retrievePosByName from TestUtils to get the POS directly by name
+        PosDto retrievedPos = retrievePosByName(name);
         
         assertThat(retrievedPos.description()).isEqualTo(expectedDescription);
     }
