@@ -91,7 +91,11 @@ public class CucumberPosSteps {
         assertThat(retrievedPosList).isEmpty();
     }
 
-    // TODO: Add Given step for new scenario
+    @Given("the POS list")
+    public void poslist(List<PosDto> posList){
+        createdPosList = createPos(posList);
+        assertThat(createdPosList).size().isEqualTo(posList.size());
+    }
 
     // When -----------------------------------------------------------------------
 
@@ -101,7 +105,30 @@ public class CucumberPosSteps {
         assertThat(createdPosList).size().isEqualTo(posList.size());
     }
 
-    // TODO: Add When step for new scenario
+    @When("I update description of POS named {string} to {string}")
+    public void updateDescriptionOfPosNamedTo(String name, String newDescription) {
+        // Find the POS by name from the created list
+        PosDto posToUpdate = createdPosList.stream()
+                .filter(pos -> pos.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("POS with name '" + name + "' not found"));
+        
+        // Create updated POS with new description
+        PosDto updatedPosDto = PosDto.builder()
+                .id(posToUpdate.id())
+                .name(posToUpdate.name())
+                .description(newDescription)
+                .type(posToUpdate.type())
+                .campus(posToUpdate.campus())
+                .street(posToUpdate.street())
+                .houseNumber(posToUpdate.houseNumber())
+                .postalCode(posToUpdate.postalCode())
+                .city(posToUpdate.city())
+                .build();
+        
+        // Update the POS using TestUtils
+        updatedPos = updatePos(List.of(updatedPosDto)).getFirst();
+    }
 
     // Then -----------------------------------------------------------------------
 
@@ -113,5 +140,20 @@ public class CucumberPosSteps {
                 .containsExactlyInAnyOrderElementsOf(createdPosList);
     }
 
-    // TODO: Add Then step for new scenario
+    @Then("the POS list should contain {int} elements")
+    public void thePosListShouldContainElements(int expectedCount) {
+        List<PosDto> retrievedPosList = retrievePos();
+        assertThat(retrievedPosList).hasSize(expectedCount);
+    }
+
+    @Then("the POS named {string} should have description {string}")
+    public void thePosNamedShouldHaveDescription(String name, String expectedDescription) {
+        List<PosDto> retrievedPosList = retrievePos();
+        PosDto retrievedPos = retrievedPosList.stream()
+                .filter(pos -> pos.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("POS with name '" + name + "' not found"));
+        
+        assertThat(retrievedPos.description()).isEqualTo(expectedDescription);
+    }
 }
